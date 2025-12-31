@@ -15,11 +15,11 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
 
   const handleSave = () => {
     onUpdateExam(editExam);
-    alert('Đã lưu cấu trúc đề thi vào máy học sinh!');
+    alert('Đã lưu nội dung đề thi vào hệ thống!');
   };
 
   const exportToJson = () => {
-    // Tạo tên file định dạng dd-mm-yyyy_monthly test
+    // Luôn lấy ngày hiện tại để làm mốc định danh cho đề thi mới nhất
     const now = new Date();
     const d = String(now.getDate()).padStart(2, '0');
     const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -94,16 +94,15 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
   };
 
   return (
-    <div className="max-w-5xl mx-auto w-full p-6 space-y-8">
-      {/* Thanh công cụ chính */}
-      <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div className="max-w-5xl mx-auto w-full p-6 space-y-8 animate-in fade-in duration-700">
+      <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h2 className="text-3xl font-black text-slate-800">Soạn thảo đề thi</h2>
-          <p className="text-slate-400 font-bold mt-1">Hỗ trợ định dạng IGCSE Mathematics</p>
+          <h2 className="text-3xl font-black text-slate-800">Quản lý đề thi</h2>
+          <p className="text-slate-400 font-bold mt-1">Cấu hình bài tập và đáp án tự động</p>
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <div className="bg-blue-50 px-6 py-3 rounded-2xl border-2 border-blue-100 flex flex-col items-center">
-            <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Tổng điểm</span>
+            <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Marks</span>
             <div className="flex items-center gap-1 text-blue-600 font-black text-2xl">
               <Sigma className="w-5 h-5" />
               {totalPoints}
@@ -111,7 +110,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
           </div>
           <button
             onClick={handleSave}
-            className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-2xl flex items-center gap-2 font-black transition-all shadow-xl active:scale-95"
+            className="bg-slate-900 hover:bg-blue-600 text-white px-8 py-4 rounded-2xl flex items-center gap-2 font-black transition-all shadow-xl shadow-slate-200 active:scale-95"
           >
             <Save className="w-5 h-5" />
             Lưu đề
@@ -119,94 +118,92 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
         </div>
       </div>
 
-      {/* Quy trình đồng bộ Cloud */}
-      <div className="bg-blue-600 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden">
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10">
-          <Share2 className="w-40 h-40" />
+          <CloudUpload className="w-48 h-48" />
         </div>
         
         <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="bg-white/20 p-4 rounded-3xl">
-              <CloudUpload className="w-10 h-10" />
+          <div className="flex items-center gap-4 mb-10">
+            <div className="bg-white/20 p-5 rounded-[2rem]">
+              <Share2 className="w-10 h-10" />
             </div>
             <div>
-              <h3 className="text-2xl font-black">Phát hành lên Google Drive</h3>
-              <p className="text-blue-100 font-medium">Học sinh sẽ tự động nhận đề có ngày gần nhất</p>
+              <h3 className="text-2xl font-black">Xuất bản lên Cloud Drive</h3>
+              <p className="text-blue-100 font-bold">Quy trình bắt buộc để học sinh nhận đề tự động</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white/10 p-6 rounded-3xl border border-white/20">
-              <span className="inline-block bg-blue-500 text-[10px] font-black px-2 py-1 rounded-lg mb-4">BƯỚC 1</span>
-              <p className="font-bold mb-4 text-sm leading-relaxed">Xuất file cấu hình. Tên file sẽ tự động là <code className="bg-blue-800 px-1">dd-mm-yyyy_monthly test.json</code>.</p>
+            <div className="bg-white/10 p-8 rounded-[2rem] border border-white/20 backdrop-blur-sm">
+              <span className="inline-block bg-white/20 text-[10px] font-black px-3 py-1.5 rounded-full mb-6 uppercase tracking-widest">Bước 1</span>
+              <p className="font-bold mb-6 text-sm leading-relaxed">Nhấn Xuất file JSON. App sẽ đặt tên file có ngày hiện tại để học sinh dễ tìm.</p>
               <button 
                 onClick={exportToJson}
-                className="w-full bg-white text-blue-600 py-3 rounded-xl font-black text-sm hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 shadow-lg"
+                className="w-full bg-white text-blue-600 py-4 rounded-2xl font-black text-sm hover:shadow-xl transition-all flex items-center justify-center gap-2"
               >
-                <Download className="w-4 h-4" /> Xuất file JSON
+                <Download className="w-4 h-4" /> Xuất JSON
               </button>
             </div>
-            <div className="bg-white/10 p-6 rounded-3xl border border-white/20">
-              <span className="inline-block bg-blue-500 text-[10px] font-black px-2 py-1 rounded-lg mb-4">BƯỚC 2</span>
-              <p className="font-bold mb-4 text-sm leading-relaxed">Mở thư mục Drive bên dưới và tải file lên đó.</p>
+            <div className="bg-white/10 p-8 rounded-[2rem] border border-white/20 backdrop-blur-sm">
+              <span className="inline-block bg-white/20 text-[10px] font-black px-3 py-1.5 rounded-full mb-6 uppercase tracking-widest">Bước 2</span>
+              <p className="font-bold mb-6 text-sm leading-relaxed">Tải file vừa có lên Folder Drive Master (Nút bên dưới).</p>
               <a 
                 href={MASTER_DRIVE_URL} 
                 target="_blank" 
                 rel="noreferrer"
-                className="w-full bg-blue-500 text-white py-3 rounded-xl font-black text-sm hover:bg-blue-400 transition-colors flex items-center justify-center gap-2 border border-white/20 shadow-lg"
+                className="w-full bg-blue-500 text-white py-4 rounded-2xl font-black text-sm hover:bg-blue-400 transition-all flex items-center justify-center gap-2 border border-white/20 shadow-lg"
               >
-                <ExternalLink className="w-4 h-4" /> Truy cập Folder Drive
+                <ExternalLink className="w-4 h-4" /> Mở Folder Drive
               </a>
             </div>
-            <div className="bg-white/10 p-6 rounded-3xl border border-white/20">
-              <span className="inline-block bg-blue-500 text-[10px] font-black px-2 py-1 rounded-lg mb-4">BƯỚC 3</span>
-              <p className="font-bold text-sm leading-relaxed">Học sinh chỉ cần vào trang web. App sẽ tự động tìm file có ngày gần nhất với hôm nay để tải đề.</p>
+            <div className="bg-white/10 p-8 rounded-[2rem] border border-white/20 backdrop-blur-sm flex flex-col justify-center">
+              <span className="inline-block bg-white/20 text-[10px] font-black px-3 py-1.5 rounded-full mb-6 uppercase tracking-widest">Bước 3</span>
+              <p className="font-bold text-sm leading-relaxed italic text-blue-50">Học sinh khi vào App sẽ tự động quét folder này, đọc ngày tháng trong tên file và thời gian upload để chọn đề thi mới nhất cho hôm nay.</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Cấu hình chung */}
-      <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-200 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-2">
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Tiêu đề bài kiểm tra</label>
+      <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-200 space-y-8">
+        <h3 className="font-black text-slate-800 uppercase tracking-widest text-xs border-b border-slate-100 pb-4">Thông tin bài thi</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="space-y-3">
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Tiêu đề (Hiện trên PDF)</label>
             <input
               type="text"
               value={editExam.title}
               onChange={(e) => setEditExam({ ...editExam, title: e.target.value })}
-              className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 bg-white text-slate-900 font-bold focus:border-blue-500 outline-none"
+              className="w-full px-6 py-5 rounded-2xl border-2 border-slate-100 bg-white text-slate-900 font-bold focus:border-blue-500 outline-none transition-all"
             />
           </div>
-          <div className="space-y-2">
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Thời gian làm bài (Phút)</label>
+          <div className="space-y-3">
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Thời gian (Phút)</label>
             <input
               type="number"
               value={editExam.durationMinutes}
               onChange={(e) => setEditExam({ ...editExam, durationMinutes: parseInt(e.target.value) || 0 })}
-              className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 bg-white text-slate-900 font-bold focus:border-blue-500 outline-none"
+              className="w-full px-6 py-5 rounded-2xl border-2 border-slate-100 bg-white text-slate-900 font-bold focus:border-blue-500 outline-none transition-all"
             />
           </div>
         </div>
       </div>
 
-      {/* Danh sách câu hỏi */}
-      <div className="space-y-8 pb-32">
+      <div className="space-y-8 pb-40">
         {editExam.questions.map((q, qIndex) => (
-          <div key={q.id} className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
-            <div className="bg-slate-50/50 px-8 py-5 border-b border-slate-100 flex justify-between items-center">
-              <span className="font-black text-slate-800 uppercase tracking-tight">Question {q.number}</span>
+          <div key={q.id} className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden group">
+            <div className="bg-slate-50/50 px-10 py-6 border-b border-slate-100 flex justify-between items-center group-hover:bg-slate-100/50 transition-colors">
+              <span className="font-black text-slate-800 uppercase tracking-tight text-lg">Question {q.number}</span>
               <button
                 onClick={() => removeQuestion(q.id)}
-                className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-xl transition-all"
+                className="text-slate-300 hover:text-red-500 p-3 hover:bg-red-50 rounded-2xl transition-all"
               >
-                <Trash2 className="w-5 h-5" />
+                <Trash2 className="w-6 h-6" />
               </button>
             </div>
-            <div className="p-8 space-y-8">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nội dung chính câu hỏi</label>
+            <div className="p-10 space-y-10">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nội dung câu hỏi chính</label>
                 <textarea
                   value={q.mainText}
                   onChange={(e) => {
@@ -214,28 +211,28 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
                     newQs[qIndex].mainText = e.target.value;
                     setEditExam({ ...editExam, questions: newQs });
                   }}
-                  className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 bg-white text-slate-900 font-medium focus:border-blue-500 outline-none min-h-[120px] placeholder:text-slate-300"
-                  placeholder="Ví dụ: Solve the following quadratic equation..."
+                  className="w-full px-8 py-6 rounded-[2rem] border-2 border-slate-100 bg-white text-slate-900 font-medium focus:border-blue-500 outline-none min-h-[140px] placeholder:text-slate-300 transition-all text-lg"
+                  placeholder="Ví dụ: Solve the following equations for x..."
                 />
               </div>
 
-              <div className="space-y-6">
-                <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-                  <h4 className="font-black text-slate-800 uppercase text-xs tracking-widest">Các ý nhỏ (Sub-parts)</h4>
+              <div className="space-y-8">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-black text-slate-800 uppercase text-xs tracking-[0.2em] ml-1">Sub-parts</h4>
                   <button
                     onClick={() => addSubQuestion(q.id)}
-                    className="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-xs font-black hover:bg-blue-600 hover:text-white transition-all flex items-center gap-2"
+                    className="bg-blue-50 text-blue-600 px-6 py-2.5 rounded-2xl text-xs font-black hover:bg-blue-600 hover:text-white transition-all flex items-center gap-2 shadow-sm"
                   >
-                    <Plus className="w-4 h-4" /> Thêm ý
+                    <Plus className="w-4 h-4" /> Thêm ý nhỏ
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-6">
                   {q.subQuestions.map((sq, sqIndex) => (
-                    <div key={sq.id} className="p-6 bg-slate-50/30 rounded-3xl border border-slate-100 space-y-4">
-                      <div className="flex items-start gap-4">
-                        <div className="w-16">
-                          <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase text-center">Ý</label>
+                    <div key={sq.id} className="p-8 bg-slate-50/30 rounded-[2rem] border border-slate-100 space-y-6 hover:shadow-md transition-all">
+                      <div className="flex items-start gap-6">
+                        <div className="w-20">
+                          <label className="block text-[10px] font-black text-slate-400 mb-2 uppercase text-center">Part</label>
                           <input
                             type="text"
                             value={sq.part}
@@ -244,11 +241,11 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
                               newQs[qIndex].subQuestions[sqIndex].part = e.target.value;
                               setEditExam({ ...editExam, questions: newQs });
                             }}
-                            className="w-full px-2 py-3 rounded-xl border-2 border-slate-100 bg-white text-slate-900 text-center font-black focus:border-blue-500 outline-none"
+                            className="w-full px-2 py-4 rounded-2xl border-2 border-slate-100 bg-white text-slate-900 text-center font-black focus:border-blue-500 outline-none"
                           />
                         </div>
                         <div className="flex-1">
-                          <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase">Yêu cầu</label>
+                          <label className="block text-[10px] font-black text-slate-400 mb-2 uppercase ml-1">Yêu cầu cụ thể</label>
                           <input
                             type="text"
                             value={sq.text}
@@ -257,11 +254,11 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
                               newQs[qIndex].subQuestions[sqIndex].text = e.target.value;
                               setEditExam({ ...editExam, questions: newQs });
                             }}
-                            className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 bg-white text-slate-900 font-medium focus:border-blue-500 outline-none"
+                            className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 bg-white text-slate-900 font-bold focus:border-blue-500 outline-none"
                           />
                         </div>
-                        <div className="w-24">
-                          <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase text-center">Điểm</label>
+                        <div className="w-28">
+                          <label className="block text-[10px] font-black text-slate-400 mb-2 uppercase text-center">Marks</label>
                           <input
                             type="number"
                             value={sq.points}
@@ -270,18 +267,18 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
                               newQs[qIndex].subQuestions[sqIndex].points = parseInt(e.target.value) || 0;
                               setEditExam({ ...editExam, questions: newQs });
                             }}
-                            className="w-full px-2 py-3 rounded-xl border-2 border-slate-100 bg-white text-slate-900 text-center font-black text-blue-600 focus:border-blue-500 outline-none"
+                            className="w-full px-2 py-4 rounded-2xl border-2 border-slate-100 bg-white text-slate-900 text-center font-black text-blue-600 focus:border-blue-500 outline-none"
                           />
                         </div>
                         <button
                           onClick={() => removeSubQuestion(q.id, sq.id)}
-                          className="mt-6 p-3 text-slate-300 hover:text-red-500 transition-colors"
+                          className="mt-8 p-3 text-slate-300 hover:text-red-500 transition-colors"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
-                      <div className="space-y-1">
-                        <label className="block text-[10px] font-black text-blue-500 uppercase tracking-widest ml-1">Đáp án chính xác</label>
+                      <div className="space-y-2">
+                        <label className="block text-[10px] font-black text-blue-500 uppercase tracking-widest ml-1">Đáp án chính xác (Auto-grade)</label>
                         <input
                           type="text"
                           value={sq.correctAnswer}
@@ -290,8 +287,8 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
                             newQs[qIndex].subQuestions[sqIndex].correctAnswer = e.target.value;
                             setEditExam({ ...editExam, questions: newQs });
                           }}
-                          className="w-full px-5 py-3 rounded-xl border-2 border-blue-100 bg-white text-slate-900 font-bold focus:border-blue-500 outline-none"
-                          placeholder="e.g. 15.2"
+                          className="w-full px-8 py-4 rounded-2xl border-2 border-blue-100 bg-white text-slate-900 font-bold focus:border-blue-500 outline-none"
+                          placeholder="e.g. 5.5 or 3/4"
                         />
                       </div>
                     </div>
@@ -304,12 +301,12 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
 
         <button
           onClick={addQuestion}
-          className="w-full py-12 border-4 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center gap-4 text-slate-300 font-black hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-all group"
+          className="w-full py-16 border-4 border-dashed border-slate-200 rounded-[3.5rem] flex flex-col items-center justify-center gap-5 text-slate-300 font-black hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-all group shadow-sm active:scale-95"
         >
-          <div className="bg-slate-100 p-6 rounded-full group-hover:bg-blue-100 transition-all group-hover:scale-110 shadow-sm">
-            <Plus className="w-10 h-10" />
+          <div className="bg-slate-100 p-8 rounded-full group-hover:bg-blue-100 transition-all group-hover:scale-110 shadow-inner">
+            <Plus className="w-12 h-12" />
           </div>
-          <span className="text-xl uppercase tracking-widest">Thêm câu hỏi mới</span>
+          <span className="text-2xl uppercase tracking-[0.3em]">Thêm câu hỏi mới</span>
         </button>
       </div>
     </div>

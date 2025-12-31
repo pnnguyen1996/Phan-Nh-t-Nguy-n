@@ -17,7 +17,6 @@ const StudentExam: React.FC<StudentExamProps> = ({ exam, studentInfo, onFinish }
   const [answers, setAnswers] = useState<AnswerState>({});
   const [submittedQuestions, setSubmittedQuestions] = useState<SubmittedAnswers>({});
   const [isExamFinished, setIsExamFinished] = useState(false);
-  // Fix: Use ReturnType<typeof setInterval> instead of NodeJS.Timeout to avoid missing namespace error in browser environment
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -61,7 +60,9 @@ const StudentExam: React.FC<StudentExamProps> = ({ exam, studentInfo, onFinish }
     exam.questions.forEach(q => {
       q.subQuestions.forEach(sq => {
         maxScore += sq.points;
-        if (answers[sq.id]?.trim().toLowerCase() === sq.correctAnswer.trim().toLowerCase()) {
+        const studentAns = (answers[sq.id] || '').trim().toLowerCase();
+        const correctAns = sq.correctAnswer.trim().toLowerCase();
+        if (studentAns === correctAns && studentAns !== '') {
           totalScore += sq.points;
         }
       });
@@ -76,43 +77,49 @@ const StudentExam: React.FC<StudentExamProps> = ({ exam, studentInfo, onFinish }
     // Header
     doc.setFontSize(22);
     doc.setTextColor(40);
-    doc.text('EXAM REPORT', 105, 20, { align: 'center' });
+    doc.text('IGCSE MATHEMATICS REPORT', 105, 20, { align: 'center' });
     
     // Student Info
     doc.setFontSize(12);
+    doc.setTextColor(60);
     doc.text(`Student: ${studentInfo.name}`, 20, 40);
     doc.text(`Class: ${studentInfo.className}`, 20, 48);
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 56);
     doc.text(`Exam: ${exam.title}`, 20, 64);
 
-    // Score Banner
-    doc.setFillColor(59, 130, 246);
+    // Score Section
+    doc.setFillColor(30, 41, 59);
     doc.rect(20, 75, 170, 25, 'F');
     doc.setTextColor(255);
     doc.setFontSize(16);
-    doc.text(`TOTAL SCORE: ${totalScore} / ${maxScore}`, 105, 91, { align: 'center' });
+    doc.text(`TOTAL MARKS: ${totalScore} / ${maxScore}`, 105, 91, { align: 'center' });
 
-    // Table Data
+    // Table
     const tableData = exam.questions.flatMap(q => 
-      q.subQuestions.map(sq => [
-        `Q${q.number}${sq.part}`,
-        sq.text,
-        answers[sq.id] || '(No Answer)',
-        sq.correctAnswer,
-        answers[sq.id]?.trim().toLowerCase() === sq.correctAnswer.trim().toLowerCase() ? sq.points : 0,
-        sq.points
-      ])
+      q.subQuestions.map(sq => {
+        const studentAns = answers[sq.id] || '(Blank)';
+        const isCorrect = studentAns.trim().toLowerCase() === sq.correctAnswer.trim().toLowerCase();
+        return [
+          `Q${q.number}(${sq.part})`,
+          sq.text,
+          studentAns,
+          sq.correctAnswer,
+          isCorrect ? sq.points : 0,
+          sq.points
+        ];
+      })
     );
 
     autoTable(doc, {
       startY: 110,
-      head: [['Question', 'Task', 'Your Answer', 'Correct Answer', 'Earned', 'Max']],
+      head: [['Ref', 'Task', 'Student Ans', 'Correct Ans', 'Marks', 'Max']],
       body: tableData,
       theme: 'grid',
-      headStyles: { fillColor: [51, 65, 85] }
+      headStyles: { fillColor: [51, 65, 85] },
+      styles: { fontSize: 9 }
     });
 
-    doc.save(`${studentInfo.name}_${studentInfo.className}_IGCSE_Result.pdf`);
+    doc.save(`${studentInfo.name}_${studentInfo.className}_Result.pdf`);
   };
 
   const currentQuestion = exam.questions[currentQuestionIdx];
@@ -121,35 +128,35 @@ const StudentExam: React.FC<StudentExamProps> = ({ exam, studentInfo, onFinish }
     const { totalScore, maxScore } = calculateScore();
     return (
       <div className="flex-1 flex items-center justify-center p-6 bg-slate-100">
-        <div className="bg-white max-w-2xl w-full p-10 rounded-3xl shadow-2xl border border-slate-200 text-center">
-          <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
-            <CheckCircle className="w-12 h-12" />
+        <div className="bg-white max-w-2xl w-full p-12 rounded-[2.5rem] shadow-2xl border border-slate-200 text-center animate-in zoom-in duration-500">
+          <div className="bg-green-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 text-green-600">
+            <CheckCircle className="w-14 h-14" />
           </div>
-          <h2 className="text-3xl font-bold text-slate-800 mb-2">Exam Completed!</h2>
-          <p className="text-slate-500 mb-8">Well done, {studentInfo.name}. You have finished the exam.</p>
+          <h2 className="text-4xl font-black text-slate-800 mb-2">Exam Completed!</h2>
+          <p className="text-slate-400 font-bold mb-10 text-lg uppercase tracking-widest">Hệ thống đã ghi nhận bài làm</p>
           
-          <div className="grid grid-cols-2 gap-6 mb-10">
-            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-              <span className="block text-slate-400 text-sm font-bold uppercase mb-1">Total Score</span>
-              <span className="text-4xl font-black text-blue-600">{totalScore} <span className="text-slate-300 text-lg">/ {maxScore}</span></span>
+          <div className="grid grid-cols-2 gap-8 mb-12">
+            <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-inner">
+              <span className="block text-slate-400 text-xs font-black uppercase mb-2 tracking-widest">Earned Marks</span>
+              <span className="text-5xl font-black text-blue-600">{totalScore} <span className="text-slate-200 text-xl">/ {maxScore}</span></span>
             </div>
-            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-              <span className="block text-slate-400 text-sm font-bold uppercase mb-1">Percentage</span>
-              <span className="text-4xl font-black text-slate-700">{Math.round((totalScore / maxScore) * 100)}%</span>
+            <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-inner">
+              <span className="block text-slate-400 text-xs font-black uppercase mb-2 tracking-widest">Efficiency</span>
+              <span className="text-5xl font-black text-slate-700">{maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0}%</span>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={generatePDF}
-              className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+              className="px-10 py-5 bg-blue-600 text-white rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 transform hover:-translate-y-1"
             >
-              <FileText className="w-5 h-5" />
+              <FileText className="w-6 h-6" />
               Download PDF Report
             </button>
             <button
               onClick={onFinish}
-              className="px-8 py-4 bg-slate-200 text-slate-700 rounded-2xl font-bold hover:bg-slate-300 transition-all"
+              className="px-10 py-5 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all shadow-xl"
             >
               Return to Login
             </button>
@@ -162,100 +169,112 @@ const StudentExam: React.FC<StudentExamProps> = ({ exam, studentInfo, onFinish }
   return (
     <div className="flex-1 flex flex-col md:flex-row h-[calc(100vh-64px)] overflow-hidden">
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-80 bg-white border-r border-slate-200 flex flex-col">
-        <div className="p-6 border-b border-slate-100">
-          <div className="flex items-center gap-3 text-red-500 font-bold mb-4 bg-red-50 p-3 rounded-xl border border-red-100">
-            <Clock className="w-5 h-5" />
-            <span className="text-xl tabular-nums">{formatTime(timeLeft)}</span>
+      <aside className="w-full md:w-80 bg-white border-r border-slate-200 flex flex-col shadow-sm">
+        <div className="p-8 border-b border-slate-100">
+          <div className="flex items-center gap-4 text-red-500 font-black mb-6 bg-red-50 p-5 rounded-2xl border border-red-100 shadow-sm">
+            <Clock className="w-7 h-7" />
+            <span className="text-3xl tabular-nums leading-none tracking-tight">{formatTime(timeLeft)}</span>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-slate-400 uppercase">Current Progress</p>
-            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+          <div className="space-y-3">
+            <div className="flex justify-between items-end">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tiến độ làm bài</p>
+              <p className="text-[10px] font-black text-blue-600 uppercase">
+                {Object.keys(submittedQuestions).length} / {exam.questions.length} Đã xong
+              </p>
+            </div>
+            <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden shadow-inner">
               <div 
-                className="bg-blue-600 h-full transition-all duration-500"
+                className="bg-blue-600 h-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(37,99,235,0.4)]"
                 style={{ width: `${(Object.keys(submittedQuestions).length / exam.questions.length) * 100}%` }}
               ></div>
             </div>
           </div>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-6">
-          <h3 className="text-sm font-bold text-slate-700 mb-4 uppercase">Question Navigation</h3>
-          <div className="grid grid-cols-4 gap-3">
-            {exam.questions.map((q, idx) => (
-              <button
-                key={q.id}
-                onClick={() => setCurrentQuestionIdx(idx)}
-                className={`
-                  h-12 w-full rounded-xl font-bold flex items-center justify-center transition-all border-2
-                  ${currentQuestionIdx === idx 
-                    ? 'border-blue-600 bg-blue-50 text-blue-600 ring-2 ring-blue-100' 
-                    : submittedQuestions[q.id]
-                      ? 'border-green-500 bg-green-50 text-green-600'
-                      : 'border-slate-100 bg-white text-slate-400 hover:border-slate-300 hover:text-slate-600'
-                  }
-                `}
-              >
-                {q.number}
-              </button>
-            ))}
+        <div className="flex-1 overflow-y-auto p-8">
+          <h3 className="text-[10px] font-black text-slate-300 mb-5 uppercase tracking-[0.2em]">Navigation Panel</h3>
+          <div className="grid grid-cols-4 gap-4">
+            {exam.questions.map((q, idx) => {
+              const isSubmitted = submittedQuestions[q.id];
+              const isCurrent = currentQuestionIdx === idx;
+              
+              return (
+                <button
+                  key={q.id}
+                  onClick={() => setCurrentQuestionIdx(idx)}
+                  className={`
+                    h-14 w-full rounded-2xl font-black flex items-center justify-center transition-all border-2 text-base
+                    ${isCurrent 
+                      ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-lg scale-110 z-10' 
+                      : isSubmitted
+                        ? 'border-green-600 bg-green-600 text-white shadow-md'
+                        : 'border-slate-100 bg-white text-slate-400 hover:border-slate-300'
+                    }
+                  `}
+                >
+                  {q.number}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="p-6 border-t border-slate-100">
+        <div className="p-8 border-t border-slate-100 bg-slate-50/50">
           <button
             onClick={() => {
-              if (confirm('Are you sure you want to finish the exam? Any unsubmitted questions will not be saved.')) {
+              if (confirm('Xác nhận nộp bài thi? Vui lòng đảm bảo các câu hỏi đã được nhấn "Submit" để lưu bài.')) {
                 handleFinishExam();
               }
             }}
-            className="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold hover:bg-slate-900 transition-all flex items-center justify-center gap-2"
+            className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black hover:bg-blue-600 transition-all flex items-center justify-center gap-3 shadow-2xl shadow-slate-300 active:scale-95"
           >
             <Send className="w-5 h-5" />
-            Finish & Submit
+            Nộp bài thi
           </button>
         </div>
       </aside>
 
       {/* Question Canvas */}
-      <section className="flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8">
-        <div className="max-w-3xl mx-auto space-y-6 pb-12">
+      <section className="flex-1 bg-slate-50 overflow-y-auto p-6 md:p-12">
+        <div className="max-w-4xl mx-auto space-y-10 pb-32">
           {/* Main Question Card */}
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-8">
-              <div className="flex items-center gap-2 mb-6">
-                <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-sm font-bold">
-                  Question {currentQuestion.number} of {exam.questions.length}
+          <div className="bg-white rounded-[3rem] shadow-xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <div className="p-12">
+              <div className="flex items-center justify-between mb-10">
+                <span className="bg-slate-100 text-slate-500 px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest">
+                  Question {currentQuestion.number} / {exam.questions.length}
                 </span>
                 {submittedQuestions[currentQuestion.id] && (
-                  <span className="bg-green-100 text-green-600 px-3 py-1 rounded-lg text-sm font-bold flex items-center gap-1">
-                    <CheckCircle className="w-4 h-4" /> Submitted
-                  </span>
+                  <div className="flex items-center gap-2 bg-green-100 text-green-700 px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-green-200">
+                    <CheckCircle className="w-4 h-4" /> Đã lưu bài làm
+                  </div>
                 )}
               </div>
               
-              <div className="text-xl text-slate-800 mb-8 leading-relaxed font-medium">
+              <div className="text-3xl text-slate-800 mb-16 leading-relaxed font-bold tracking-tight">
                 {currentQuestion.mainText}
               </div>
 
-              <div className="space-y-10">
+              <div className="space-y-16">
                 {currentQuestion.subQuestions.map((sq) => (
-                  <div key={sq.id} className="relative pl-8 border-l-2 border-slate-100">
-                    <span className="absolute -left-2 top-0 bg-white text-blue-600 font-bold pr-2">
-                      ({sq.part})
+                  <div key={sq.id} className="relative pl-12 border-l-4 border-slate-100 hover:border-blue-400 transition-colors duration-300">
+                    <span className="absolute -left-4 top-0 bg-blue-600 text-white font-black px-2.5 py-1 rounded shadow-md text-xs italic">
+                      {sq.part}
                     </span>
-                    <div className="mb-4 text-slate-700">
+                    <div className="mb-8 text-xl text-slate-700 font-semibold leading-relaxed">
                       {sq.text} 
-                      <span className="text-slate-400 ml-2 font-medium">[{sq.points} marks]</span>
+                      <span className="text-slate-400 ml-4 text-xs font-black uppercase tracking-[0.2em] border-l-2 border-slate-100 pl-4">
+                        [{sq.points} Marks]
+                      </span>
                     </div>
                     
-                    <div className="flex flex-col gap-2">
-                      <label className="text-xs font-bold text-slate-400 uppercase">Your Answer</label>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Student Answer</label>
                       <input
                         type="text"
                         value={answers[sq.id] || ''}
                         onChange={(e) => handleAnswerChange(sq.id, e.target.value)}
-                        className="w-full md:w-2/3 px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none transition-all math-font text-lg"
+                        className="w-full md:w-4/5 px-8 py-6 rounded-3xl border-2 border-slate-100 bg-white text-slate-900 focus:border-blue-600 focus:ring-8 focus:ring-blue-50 outline-none transition-all math-font text-3xl shadow-inner placeholder:text-slate-200"
                         placeholder="Type answer here..."
                         disabled={submittedQuestions[currentQuestion.id]}
                       />
@@ -265,11 +284,11 @@ const StudentExam: React.FC<StudentExamProps> = ({ exam, studentInfo, onFinish }
               </div>
             </div>
 
-            <div className="bg-slate-50 px-8 py-6 border-t border-slate-100 flex justify-between items-center">
+            <div className="bg-slate-50/50 px-12 py-10 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-8">
               <button
                 disabled={currentQuestionIdx === 0}
                 onClick={() => setCurrentQuestionIdx(prev => prev - 1)}
-                className="flex items-center gap-2 text-slate-500 font-bold hover:text-blue-600 disabled:opacity-30 transition-all"
+                className="flex items-center gap-2 text-slate-400 font-black hover:text-blue-600 disabled:opacity-20 transition-all uppercase text-[10px] tracking-widest order-2 sm:order-1"
               >
                 <ChevronLeft className="w-5 h-5" />
                 Previous
@@ -278,24 +297,30 @@ const StudentExam: React.FC<StudentExamProps> = ({ exam, studentInfo, onFinish }
               <button
                 onClick={() => submitQuestion(currentQuestion.id)}
                 className={`
-                  px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md
+                  px-16 py-6 rounded-[2.5rem] font-black flex items-center justify-center gap-4 transition-all shadow-2xl order-1 sm:order-2 w-full sm:w-auto text-lg
                   ${submittedQuestions[currentQuestion.id]
-                    ? 'bg-green-100 text-green-700 border border-green-200'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-100'
+                    ? 'bg-green-600 text-white shadow-green-100 scale-105'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200 transform hover:-translate-y-1 active:scale-95'
                   }
                 `}
               >
                 {submittedQuestions[currentQuestion.id] ? (
-                  <>Update Answer</>
+                  <>
+                    <CheckCircle className="w-7 h-7" />
+                    Đã lưu bài (Sửa lại)
+                  </>
                 ) : (
-                  <>Submit Question {currentQuestion.number}</>
+                  <>
+                    <Send className="w-7 h-7" />
+                    Submit Question {currentQuestion.number}
+                  </>
                 )}
               </button>
 
               <button
                 disabled={currentQuestionIdx === exam.questions.length - 1}
                 onClick={() => setCurrentQuestionIdx(prev => prev + 1)}
-                className="flex items-center gap-2 text-slate-500 font-bold hover:text-blue-600 disabled:opacity-30 transition-all"
+                className="flex items-center gap-2 text-slate-400 font-black hover:text-blue-600 disabled:opacity-20 transition-all uppercase text-[10px] tracking-widest order-3"
               >
                 Next
                 <ChevronRight className="w-5 h-5" />
@@ -303,11 +328,14 @@ const StudentExam: React.FC<StudentExamProps> = ({ exam, studentInfo, onFinish }
             </div>
           </div>
 
-          <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 p-4 rounded-2xl">
-            <AlertTriangle className="text-amber-500 w-5 h-5 mt-0.5 flex-shrink-0" />
-            <p className="text-amber-800 text-sm">
-              <span className="font-bold">Important:</span> Make sure to click "Submit Question" for each question after answering. You can change your answers anytime before the final "Finish & Submit" button.
-            </p>
+          <div className="flex items-start gap-6 bg-blue-50 border-2 border-blue-100 p-8 rounded-[3rem] shadow-sm">
+            <AlertTriangle className="text-blue-500 w-8 h-8 mt-1 flex-shrink-0" />
+            <div className="space-y-2">
+              <p className="text-blue-900 text-xs font-black uppercase tracking-widest">Exam Guidelines</p>
+              <p className="text-blue-700/80 text-sm font-medium leading-relaxed italic">
+                Hãy nhấn nút <b>"Submit Question"</b> sau khi trả lời xong từng câu hỏi. Hệ thống sẽ lưu bài làm và đánh dấu <b>MÀU XANH</b> trên bảng điều khiển bên trái để bạn dễ dàng theo dõi.
+              </p>
+            </div>
           </div>
         </div>
       </section>
