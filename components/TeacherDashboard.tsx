@@ -15,13 +15,20 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
 
   const handleSave = () => {
     onUpdateExam(editExam);
-    alert('Đã lưu cấu trúc đề thi!');
+    alert('Đã lưu cấu trúc đề thi vào máy học sinh!');
   };
 
   const exportToJson = () => {
+    // Tạo tên file định dạng dd-mm-yyyy_monthly test
+    const now = new Date();
+    const d = String(now.getDate()).padStart(2, '0');
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const y = now.getFullYear();
+    const dateStr = `${d}-${m}-${y}`;
+    
     const dataStr = JSON.stringify(editExam, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = `exam_${editExam.id}.json`;
+    const exportFileDefaultName = `${dateStr}_monthly test.json`;
     
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -92,7 +99,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
       <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <h2 className="text-3xl font-black text-slate-800">Soạn thảo đề thi</h2>
-          <p className="text-slate-400 font-bold mt-1">Cấu hình câu hỏi, điểm số và đáp án IGCSE</p>
+          <p className="text-slate-400 font-bold mt-1">Hỗ trợ định dạng IGCSE Mathematics</p>
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <div className="bg-blue-50 px-6 py-3 rounded-2xl border-2 border-blue-100 flex flex-col items-center">
@@ -124,37 +131,37 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
               <CloudUpload className="w-10 h-10" />
             </div>
             <div>
-              <h3 className="text-2xl font-black">Phát hành đề thi lên Cloud</h3>
-              <p className="text-blue-100 font-medium">Làm theo 3 bước sau để học sinh tự động nhận đề</p>
+              <h3 className="text-2xl font-black">Phát hành lên Google Drive</h3>
+              <p className="text-blue-100 font-medium">Học sinh sẽ tự động nhận đề có ngày gần nhất</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white/10 p-6 rounded-3xl border border-white/20">
               <span className="inline-block bg-blue-500 text-[10px] font-black px-2 py-1 rounded-lg mb-4">BƯỚC 1</span>
-              <p className="font-bold mb-4">Nhấn nút bên dưới để tải file cấu hình (.json) về máy.</p>
+              <p className="font-bold mb-4 text-sm leading-relaxed">Xuất file cấu hình. Tên file sẽ tự động là <code className="bg-blue-800 px-1">dd-mm-yyyy_monthly test.json</code>.</p>
               <button 
                 onClick={exportToJson}
-                className="w-full bg-white text-blue-600 py-3 rounded-xl font-black text-sm hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-white text-blue-600 py-3 rounded-xl font-black text-sm hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 shadow-lg"
               >
                 <Download className="w-4 h-4" /> Xuất file JSON
               </button>
             </div>
             <div className="bg-white/10 p-6 rounded-3xl border border-white/20">
               <span className="inline-block bg-blue-500 text-[10px] font-black px-2 py-1 rounded-lg mb-4">BƯỚC 2</span>
-              <p className="font-bold mb-4">Tải file vừa tải lên thư mục Google Drive của bạn.</p>
+              <p className="font-bold mb-4 text-sm leading-relaxed">Mở thư mục Drive bên dưới và tải file lên đó.</p>
               <a 
                 href={MASTER_DRIVE_URL} 
                 target="_blank" 
                 rel="noreferrer"
-                className="w-full bg-blue-500 text-white py-3 rounded-xl font-black text-sm hover:bg-blue-400 transition-colors flex items-center justify-center gap-2 border border-white/20"
+                className="w-full bg-blue-500 text-white py-3 rounded-xl font-black text-sm hover:bg-blue-400 transition-colors flex items-center justify-center gap-2 border border-white/20 shadow-lg"
               >
-                <ExternalLink className="w-4 h-4" /> Mở thư mục Drive
+                <ExternalLink className="w-4 h-4" /> Truy cập Folder Drive
               </a>
             </div>
             <div className="bg-white/10 p-6 rounded-3xl border border-white/20">
               <span className="inline-block bg-blue-500 text-[10px] font-black px-2 py-1 rounded-lg mb-4">BƯỚC 3</span>
-              <p className="font-bold text-sm">Lấy <b>ID của file</b> đã tải lên và gửi link App kèm <code>?examId=FILE_ID</code> cho học sinh.</p>
+              <p className="font-bold text-sm leading-relaxed">Học sinh chỉ cần vào trang web. App sẽ tự động tìm file có ngày gần nhất với hôm nay để tải đề.</p>
             </div>
           </div>
         </div>
@@ -208,7 +215,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
                     setEditExam({ ...editExam, questions: newQs });
                   }}
                   className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 bg-white text-slate-900 font-medium focus:border-blue-500 outline-none min-h-[120px] placeholder:text-slate-300"
-                  placeholder="Ví dụ: Giải phương trình sau hoặc cho tam giác ABC..."
+                  placeholder="Ví dụ: Solve the following quadratic equation..."
                 />
               </div>
 
@@ -251,7 +258,6 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
                               setEditExam({ ...editExam, questions: newQs });
                             }}
                             className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 bg-white text-slate-900 font-medium focus:border-blue-500 outline-none"
-                            placeholder="Ví dụ: Tính giá trị của x"
                           />
                         </div>
                         <div className="w-24">
@@ -275,7 +281,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
                         </button>
                       </div>
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-black text-blue-500 uppercase tracking-widest ml-1">Đáp án chính xác (Để tự động chấm điểm)</label>
+                        <label className="block text-[10px] font-black text-blue-500 uppercase tracking-widest ml-1">Đáp án chính xác</label>
                         <input
                           type="text"
                           value={sq.correctAnswer}
@@ -285,7 +291,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
                             setEditExam({ ...editExam, questions: newQs });
                           }}
                           className="w-full px-5 py-3 rounded-xl border-2 border-blue-100 bg-white text-slate-900 font-bold focus:border-blue-500 outline-none"
-                          placeholder="Nhập kết quả cuối cùng (ví dụ: 10.5)"
+                          placeholder="e.g. 15.2"
                         />
                       </div>
                     </div>
@@ -300,7 +306,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ exam, onUpdateExam 
           onClick={addQuestion}
           className="w-full py-12 border-4 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center gap-4 text-slate-300 font-black hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-all group"
         >
-          <div className="bg-slate-100 p-6 rounded-full group-hover:bg-blue-100 transition-all group-hover:scale-110">
+          <div className="bg-slate-100 p-6 rounded-full group-hover:bg-blue-100 transition-all group-hover:scale-110 shadow-sm">
             <Plus className="w-10 h-10" />
           </div>
           <span className="text-xl uppercase tracking-widest">Thêm câu hỏi mới</span>
